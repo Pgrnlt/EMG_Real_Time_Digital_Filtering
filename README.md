@@ -52,20 +52,75 @@ EMG_filtering_STM32.h
 EMG_filtering_STM32.cpp  
 
 ---
+## Arduino IDE Installation
 
-## Usage Example
+The file `EMG_filtering_STM32.zip` can be installed directly as an Arduino library.
 
+To install it:
+
+1. Download `EMG_filtering_STM32.zip`
+2. Open the Arduino IDE
+3. Go to **Sketch → Include Library → Add .ZIP Library...**
+4. Select `EMG_filtering_STM32.zip`
+5. The library will be installed automatically and will appear in the list of available libraries
+
+You can then include it in your project with:
+
+```cpp
 #include "EMG_filtering_STM32.h"
+```
 
-EMGFilter emg;
+The library is compatible with STM32 boards and any Arduino-compatible platform supporting standard C++ and floating-point arithmetic.
 
-void setup() {
-    emg.init(1000, 50, 150, 20, 5);
-}
+## Usage Example - Tested on STM32 F722ZE
 
-void loop() {
-    float raw = analogRead(A0);
-    float filtered = emg.update(raw);
+    #include "EMG_filtering_STM32.h"
+    #include <Wire.h>
+    #include "STM32TimerInterrupt.h"
+    #include "Arduino.h"
+    #else
+    #include "WProgram.h"
+    #endif
+    #define SensorInputPin1 A0 // input pin number
+    EMGFilter Filter1;
+    
+    int sampleRate = 1000;
+    int NotchFreq = 50;
+    float HP_freq=20;
+    float LP_freq=150;
+    int EnvFreq =0;
+    int Value1=0;
+    volatile bool SEMG_ready=false;
+    volatile float DataAfterFilter1=0;
+    STM32Timer ITimer1(TIM2);
+    #define TIMER1_INTERVAL_MS        1
+    void setup() {
+      Filter1.init(sampleRate, NotchFreq, LP_freq,HP_freq ,EnvFreq);
+      int Value1 = analogRead(SensorInputPin1);
+      DataAfterFilter1 = Filter1.update(Value1);
+      Serial.begin(115200);
+      ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, EMG_ready);
+    
+    }
+    
+    void loop() {
+      if (SEMG_ready) {
+        SEMG_ready=false;
+        Value1 = analogRead(SensorInputPin1);
+        DataAfterFilter1 = Filter1.update(Value1);
+        }
+        
+        Serial.print(micros());
+        Serial.print(",");
+        Serial.print(Value1);
+        Serial.print(",");
+        Serial.print(DataAfterFilter1);
+        Serial.println("*");
+    
+    }
+
+void EMG_ready(){
+  SEMG_ready = true;
 }
 
 ---
