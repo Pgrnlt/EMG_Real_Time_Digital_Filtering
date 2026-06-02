@@ -88,7 +88,7 @@ The library is compatible with STM32 boards and any Arduino-compatible platform 
     int NotchFreq = 50;
     float HP_freq=20;
     float LP_freq=150;
-    int EnvFreq =0;
+    int EnvFreq =5;
     int Value1=0;
     volatile bool SEMG_ready=false;
     volatile float DataAfterFilter1=0;
