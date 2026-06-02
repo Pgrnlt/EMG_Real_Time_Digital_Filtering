@@ -1,2 +1,2 @@
 # EMG_filtering
-Library develop to filter surface EMG signal 
+Library develop to filter surface EMG signals
